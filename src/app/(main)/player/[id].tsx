@@ -75,7 +75,7 @@ export default function PlayerScreen() {
 
   const handleStop = () => {
     stop();
-    router.back();
+    router.replace('/(main)');
   };
 
   const bgColor = routine?.color ?? '#4A90D9';
