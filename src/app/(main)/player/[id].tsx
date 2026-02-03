@@ -55,9 +55,23 @@ export default function PlayerScreen() {
   const handleStart = useCallback(() => {
     if (Platform.OS === 'web') {
       unlockAudio();
+      // Must speak synchronously from user gesture to unlock speechSynthesis
+      const sorted = [...(routine?.stretches ?? [])].sort((a, b) => a.order - b.order);
+      if (sorted.length > 0) {
+        const synth = window.speechSynthesis;
+        const voices = synth.getVoices();
+        const utterance = new SpeechSynthesisUtterance(sorted[0].name);
+        utterance.rate = 0.9;
+        utterance.volume = 1;
+        const englishVoice = voices.find(v => v.lang.startsWith('en'));
+        if (englishVoice) utterance.voice = englishVoice;
+        synth.speak(utterance);
+      }
+      play(true); // skip announce — we already spoke it
+    } else {
+      play(false);
     }
-    play();
-  }, [play]);
+  }, [play, routine]);
 
   const handleStop = () => {
     stop();

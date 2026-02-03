@@ -20,13 +20,15 @@ export function PlayerControls({
 }: PlayerControlsProps) {
   return (
     <View style={styles.container}>
-      <TouchableOpacity style={styles.sideButton} onPress={onStop}>
-        <Text style={styles.sideButtonText}>Stop</Text>
-      </TouchableOpacity>
+      <View style={styles.leftGroup}>
+        <TouchableOpacity style={styles.sideButton} onPress={onStop}>
+          <Text style={styles.sideButtonText}>Stop</Text>
+        </TouchableOpacity>
 
-      <TouchableOpacity style={styles.sideButton} onPress={onRestart}>
-        <Text style={styles.sideButtonText}>Redo</Text>
-      </TouchableOpacity>
+        <TouchableOpacity style={styles.sideButton} onPress={onRestart}>
+          <Text style={styles.sideButtonText}>Redo</Text>
+        </TouchableOpacity>
+      </View>
 
       {state === 'playing' ? (
         <TouchableOpacity style={styles.mainButton} onPress={onPause}>
@@ -40,9 +42,11 @@ export function PlayerControls({
         </TouchableOpacity>
       )}
 
-      <TouchableOpacity style={styles.sideButton} onPress={onSkip}>
-        <Text style={styles.sideButtonText}>Skip</Text>
-      </TouchableOpacity>
+      <View style={styles.rightGroup}>
+        <TouchableOpacity style={styles.sideButton} onPress={onSkip}>
+          <Text style={styles.sideButtonText}>Skip</Text>
+        </TouchableOpacity>
+      </View>
     </View>
   );
 }
@@ -50,10 +54,21 @@ export function PlayerControls({
 const styles = StyleSheet.create({
   container: {
     flexDirection: 'row',
-    justifyContent: 'center',
     alignItems: 'center',
-    gap: 16,
     paddingVertical: 16,
+  },
+  leftGroup: {
+    flex: 1,
+    flexDirection: 'row',
+    justifyContent: 'flex-end',
+    gap: 10,
+    marginRight: 16,
+  },
+  rightGroup: {
+    flex: 1,
+    flexDirection: 'row',
+    justifyContent: 'flex-start',
+    marginLeft: 16,
   },
   mainButton: {
     width: 72,
