@@ -7,6 +7,7 @@ import {
   StyleSheet,
   ScrollView,
   Alert,
+  Platform,
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useAuth } from '../../../hooks/useAuth';
@@ -27,21 +28,29 @@ export default function CreateRoutineScreen() {
   const [editingStretch, setEditingStretch] = useState<Stretch | null>(null);
   const [saving, setSaving] = useState(false);
 
+  const showAlert = (title: string, msg: string) => {
+    if (Platform.OS === 'web') {
+      window.alert(msg);
+    } else {
+      Alert.alert(title, msg);
+    }
+  };
+
   const handleSave = async () => {
     if (!user) return;
     if (!name.trim()) {
-      Alert.alert('Error', 'Please enter a routine name.');
+      showAlert('Error', 'Please enter a routine name.');
       return;
     }
 
     setSaving(true);
     try {
       await createRoutine(user.uid, { name: name.trim(), color, stretches });
-      router.back();
+      router.replace('/(main)');
     } catch (error: unknown) {
       const message =
         error instanceof Error ? error.message : 'Failed to create routine.';
-      Alert.alert('Error', message);
+      showAlert('Error', message);
     } finally {
       setSaving(false);
     }

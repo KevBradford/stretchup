@@ -8,6 +8,7 @@ import {
   ScrollView,
   Alert,
   ActivityIndicator,
+  Platform,
 } from 'react-native';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { useAuth } from '../../../hooks/useAuth';
@@ -44,10 +45,18 @@ export default function EditRoutineScreen() {
     }
   }, [routine, initialized]);
 
+  const showAlert = (title: string, msg: string) => {
+    if (Platform.OS === 'web') {
+      window.alert(msg);
+    } else {
+      Alert.alert(title, msg);
+    }
+  };
+
   const handleSave = async () => {
     if (!user || !id) return;
     if (!name.trim()) {
-      Alert.alert('Error', 'Please enter a routine name.');
+      showAlert('Error', 'Please enter a routine name.');
       return;
     }
 
@@ -58,37 +67,42 @@ export default function EditRoutineScreen() {
         color,
         stretches,
       });
-      router.back();
+      router.replace('/(main)');
     } catch (error: unknown) {
       const message =
         error instanceof Error ? error.message : 'Failed to update routine.';
-      Alert.alert('Error', message);
+      showAlert('Error', message);
     } finally {
       setSaving(false);
     }
   };
 
-  const handleDelete = () => {
-    Alert.alert(
-      'Delete Routine',
-      'Are you sure you want to delete this routine?',
-      [
-        { text: 'Cancel', style: 'cancel' },
-        {
-          text: 'Delete',
-          style: 'destructive',
-          onPress: async () => {
-            if (!user || !id) return;
-            try {
-              await deleteRoutine(user.uid, id);
-              router.back();
-            } catch {
-              Alert.alert('Error', 'Failed to delete routine.');
-            }
-          },
-        },
-      ]
-    );
+  const handleDelete = async () => {
+    const confirmed = Platform.OS === 'web'
+      ? window.confirm('Are you sure you want to delete this routine?')
+      : await new Promise<boolean>((resolve) => {
+          Alert.alert(
+            'Delete Routine',
+            'Are you sure you want to delete this routine?',
+            [
+              { text: 'Cancel', style: 'cancel', onPress: () => resolve(false) },
+              { text: 'Delete', style: 'destructive', onPress: () => resolve(true) },
+            ]
+          );
+        });
+
+    if (!confirmed || !user || !id) return;
+
+    try {
+      await deleteRoutine(user.uid, id);
+      router.replace('/(main)');
+    } catch {
+      if (Platform.OS === 'web') {
+        window.alert('Failed to delete routine.');
+      } else {
+        Alert.alert('Error', 'Failed to delete routine.');
+      }
+    }
   };
 
   const handleAddStretch = (stretch: Stretch) => {
