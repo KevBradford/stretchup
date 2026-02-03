@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
+import { Platform } from 'react-native';
 import { Stretch, PlayerState } from '../types';
 import { playChime } from '../lib/sounds';
 import { speakStretchName } from '../lib/tts';
@@ -29,6 +30,11 @@ export function usePlayer({ stretches, onFinish }: UsePlayerOptions) {
     try {
       await playChime();
     } catch {}
+    // On mobile web, Web Audio chime and speechSynthesis conflict
+    // if called simultaneously. Wait for chime to finish.
+    if (Platform.OS === 'web') {
+      await new Promise(r => setTimeout(r, 800));
+    }
     try {
       await speakStretchName(stretch.name);
     } catch {}
@@ -69,7 +75,7 @@ export function usePlayer({ stretches, onFinish }: UsePlayerOptions) {
     }
   }, [secondsRemaining, state, currentIndex, totalStretches, sorted, announceStretch, startTimer, onFinish, currentStretch]);
 
-  const play = useCallback((skipAnnounce?: boolean) => {
+  const play = useCallback(() => {
     if (sorted.length === 0) return;
 
     if (state === 'paused') {
@@ -82,9 +88,7 @@ export function usePlayer({ stretches, onFinish }: UsePlayerOptions) {
     setCurrentIndex(0);
     setState('playing');
     const first = sorted[0];
-    if (!skipAnnounce) {
-      announceStretch(first);
-    }
+    announceStretch(first);
     startTimer(first.durationSeconds);
   }, [sorted, state, secondsRemaining, announceStretch, startTimer]);
 

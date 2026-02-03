@@ -35,10 +35,14 @@ async function speakWeb(name: string): Promise<void> {
 
     try {
       const synth = window.speechSynthesis;
+      const voices = synth.getVoices();
       const utterance = new SpeechSynthesisUtterance(name);
-      utterance.lang = 'en-US';
       utterance.rate = 0.9;
       utterance.volume = 1;
+      const englishVoice = voices.find(v => v.lang.startsWith('en'));
+      if (englishVoice) {
+        utterance.voice = englishVoice;
+      }
       utterance.onend = () => { clearTimeout(timeout); done(); };
       utterance.onerror = () => { clearTimeout(timeout); done(); };
 

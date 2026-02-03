@@ -14,7 +14,6 @@ import { useAuth } from '../../../hooks/useAuth';
 import { useRoutine } from '../../../hooks/useRoutine';
 import { usePlayer } from '../../../hooks/usePlayer';
 import { unlockAudio } from '../../../lib/sounds';
-import { warmUpTTS } from '../../../lib/tts';
 import { CountdownTimer } from '../../../components/CountdownTimer';
 import { PlayerControls } from '../../../components/PlayerControls';
 import { MediaDisplay } from '../../../components/MediaDisplay';
@@ -25,6 +24,17 @@ export default function PlayerScreen() {
   const { user } = useAuth();
   const { routine, loading } = useRoutine(user?.uid, id);
   const router = useRouter();
+
+  // Preload speech voices on mount so they're ready when user taps Start
+  useEffect(() => {
+    if (Platform.OS === 'web' && window.speechSynthesis) {
+      window.speechSynthesis.getVoices();
+      // Some browsers fire voiceschanged async
+      window.speechSynthesis.addEventListener?.('voiceschanged', () => {
+        window.speechSynthesis.getVoices();
+      });
+    }
+  }, []);
 
   const {
     state,
@@ -45,21 +55,21 @@ export default function PlayerScreen() {
   const handleStart = useCallback(() => {
     if (Platform.OS === 'web') {
       unlockAudio();
-      // Speak the first stretch name directly from user gesture
+      // Speak the first stretch name synchronously from user gesture
+      // to unlock speechSynthesis on mobile browsers
       const sorted = [...(routine?.stretches ?? [])].sort((a, b) => a.order - b.order);
       if (sorted.length > 0) {
         const synth = window.speechSynthesis;
-        synth.cancel();
+        const voices = synth.getVoices();
         const utterance = new SpeechSynthesisUtterance(sorted[0].name);
-        utterance.lang = 'en-US';
         utterance.rate = 0.9;
         utterance.volume = 1;
+        const englishVoice = voices.find(v => v.lang.startsWith('en'));
+        if (englishVoice) utterance.voice = englishVoice;
         synth.speak(utterance);
       }
-      play(true); // skip announce since we just spoke it
-    } else {
-      play();
     }
+    play();
   }, [play, routine]);
 
   const handleStop = () => {
@@ -91,8 +101,8 @@ export default function PlayerScreen() {
     return (
       <View style={[styles.container, { backgroundColor: bgColor }]}>
         <StatusBar barStyle="light-content" />
-        <Text style={styles.finishedTitle}>{routine.name}</Text>
-        <Text style={styles.finishedSubtitle}>
+        <Text style={styles.idleTitle}>{routine.name}</Text>
+        <Text style={styles.idleSubtitle}>
           {routine.stretches.length} stretch{routine.stretches.length !== 1 ? 'es' : ''}
         </Text>
         <TouchableOpacity style={styles.startButton} onPress={handleStart}>
@@ -109,19 +119,17 @@ export default function PlayerScreen() {
     return (
       <View style={[styles.container, { backgroundColor: bgColor }]}>
         <StatusBar barStyle="light-content" />
-        <Text style={styles.finishedTitle}>Done!</Text>
-        <Text style={styles.finishedSubtitle}>
+        <Text style={styles.idleTitle}>Done!</Text>
+        <Text style={styles.idleSubtitle}>
           You completed {routine.name}
         </Text>
-        <View style={styles.finishedActions}>
-          <PlayerControls
-            state={state}
-            onPlay={restart}
-            onPause={() => {}}
-            onSkip={() => {}}
-            onRestart={restart}
-            onStop={handleStop}
-          />
+        <View style={styles.finishedControls}>
+          <TouchableOpacity style={styles.startButton} onPress={restart}>
+            <Text style={styles.startButtonText}>Restart</Text>
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.backLink} onPress={handleStop}>
+            <Text style={styles.backLinkText}>Done</Text>
+          </TouchableOpacity>
         </View>
       </View>
     );
@@ -220,34 +228,33 @@ const styles = StyleSheet.create({
   controls: {
     width: '100%',
     paddingHorizontal: 24,
+    paddingBottom: 16,
   },
   errorText: {
     fontSize: 18,
     color: '#fff',
     fontWeight: '500',
   },
-  finishedTitle: {
+  idleTitle: {
     fontSize: 48,
     fontWeight: '700',
     color: '#fff',
     marginBottom: 12,
   },
-  finishedSubtitle: {
+  idleSubtitle: {
     fontSize: 18,
     color: 'rgba(255,255,255,0.8)',
     textAlign: 'center',
     marginBottom: 40,
   },
-  finishedActions: {
-    width: '100%',
-    paddingHorizontal: 24,
+  finishedControls: {
+    alignItems: 'center',
   },
   startButton: {
     backgroundColor: 'rgba(255,255,255,0.25)',
     paddingHorizontal: 48,
     paddingVertical: 18,
     borderRadius: 30,
-    marginTop: 24,
   },
   startButtonText: {
     color: '#fff',
