@@ -6,7 +6,7 @@ interface PlayerControlsProps {
   onPlay: () => void;
   onPause: () => void;
   onSkip: () => void;
-  onRestart: () => void;
+  onBack: () => void;
   onStop: () => void;
 }
 
@@ -15,14 +15,14 @@ export function PlayerControls({
   onPlay,
   onPause,
   onSkip,
-  onRestart,
+  onBack,
   onStop,
 }: PlayerControlsProps) {
   return (
     <View style={styles.container}>
       <View style={styles.row}>
-        <TouchableOpacity style={styles.sideButton} onPress={onRestart}>
-          <Text style={styles.sideButtonText}>Redo</Text>
+        <TouchableOpacity style={styles.sideButton} onPress={onBack}>
+          <Text style={styles.sideButtonText}>Back</Text>
         </TouchableOpacity>
 
         {state === 'playing' ? (

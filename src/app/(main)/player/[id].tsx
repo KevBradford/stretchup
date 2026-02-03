@@ -45,6 +45,7 @@ export default function PlayerScreen() {
     play,
     pause,
     skip,
+    back,
     restart,
     stop,
   } = usePlayer({
@@ -169,7 +170,7 @@ export default function PlayerScreen() {
           onPlay={play}
           onPause={pause}
           onSkip={skip}
-          onRestart={restart}
+          onBack={back}
           onStop={handleStop}
         />
       </View>

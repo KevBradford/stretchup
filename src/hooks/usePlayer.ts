@@ -119,6 +119,26 @@ export function usePlayer({ stretches, onFinish }: UsePlayerOptions) {
     }
   }, [currentIndex, totalStretches, sorted, clearTimer, announceStretch, startTimer, onFinish]);
 
+  const back = useCallback(() => {
+    clearTimer();
+    if (currentIndex > 0) {
+      const prevIndex = currentIndex - 1;
+      setCurrentIndex(prevIndex);
+      const prev = sorted[prevIndex];
+      setState('playing');
+      announceStretch(prev);
+      startTimer(prev.durationSeconds);
+    } else {
+      // At first stretch — restart it
+      const first = sorted[0];
+      if (first) {
+        setState('playing');
+        announceStretch(first);
+        startTimer(first.durationSeconds);
+      }
+    }
+  }, [currentIndex, sorted, clearTimer, announceStretch, startTimer]);
+
   const restart = useCallback(() => {
     clearTimer();
     setCurrentIndex(0);
@@ -151,6 +171,7 @@ export function usePlayer({ stretches, onFinish }: UsePlayerOptions) {
     play,
     pause,
     skip,
+    back,
     restart,
     stop,
   };
