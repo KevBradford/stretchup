@@ -220,11 +220,11 @@ const styles = StyleSheet.create({
     borderRadius: 16,
   },
   stretchName: {
-    fontSize: 28,
+    fontSize: 38,
     fontWeight: '700',
     color: '#fff',
     textAlign: 'center',
-    marginBottom: 20,
+    marginBottom: 24,
   },
   controls: {
     width: '100%',
