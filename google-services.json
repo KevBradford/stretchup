@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "126966797223",
+    "project_id": "stretchup-a143c",
+    "storage_bucket": "stretchup-a143c.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:126966797223:android:f22dd26d0490fcdb5ddc82",
+        "android_client_info": {
+          "package_name": "com.twofountains.stretchup"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyA60ddgqvmtfsYwyjbwC5zEWlyHV549STo"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
