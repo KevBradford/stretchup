@@ -14,6 +14,7 @@ export function usePlayer({ stretches, onFinish }: UsePlayerOptions) {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [secondsRemaining, setSecondsRemaining] = useState(0);
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const switchSidesAnnouncedRef = useRef(false);
 
   const sorted = [...stretches].sort((a, b) => a.order - b.order);
   const currentStretch = sorted[currentIndex] ?? null;
@@ -57,6 +58,16 @@ export function usePlayer({ stretches, onFinish }: UsePlayerOptions) {
     [clearTimer]
   );
 
+  // Announce "Switch Sides" at the halfway point
+  useEffect(() => {
+    if (state !== 'playing' || !currentStretch?.switchSides) return;
+    const half = Math.floor(currentStretch.durationSeconds / 2);
+    if (secondsRemaining === half && !switchSidesAnnouncedRef.current) {
+      switchSidesAnnouncedRef.current = true;
+      speakStretchName('Switch Sides');
+    }
+  }, [secondsRemaining, state, currentStretch]);
+
   // Handle stretch transitions when timer reaches 0
   useEffect(() => {
     if (state !== 'playing' || secondsRemaining > 0) return;
@@ -65,11 +76,13 @@ export function usePlayer({ stretches, onFinish }: UsePlayerOptions) {
       if (currentIndex < totalStretches - 1) {
         const nextIndex = currentIndex + 1;
         setCurrentIndex(nextIndex);
+        switchSidesAnnouncedRef.current = false;
         const next = sorted[nextIndex];
         announceStretch(next);
         startTimer(next.durationSeconds);
       } else {
         setState('finished');
+        speakStretchName('Done');
         onFinish?.();
       }
     }
@@ -86,6 +99,7 @@ export function usePlayer({ stretches, onFinish }: UsePlayerOptions) {
 
     // Start from beginning
     setCurrentIndex(0);
+    switchSidesAnnouncedRef.current = false;
     setState('playing');
     const first = sorted[0];
     if (!skipAnnounce) {
@@ -108,6 +122,7 @@ export function usePlayer({ stretches, onFinish }: UsePlayerOptions) {
       clearTimer();
       const nextIndex = currentIndex + 1;
       setCurrentIndex(nextIndex);
+      switchSidesAnnouncedRef.current = false;
       const next = sorted[nextIndex];
       setState('playing');
       announceStretch(next);
@@ -115,12 +130,14 @@ export function usePlayer({ stretches, onFinish }: UsePlayerOptions) {
     } else {
       clearTimer();
       setState('finished');
+      speakStretchName('Done');
       onFinish?.();
     }
   }, [currentIndex, totalStretches, sorted, clearTimer, announceStretch, startTimer, onFinish]);
 
   const back = useCallback(() => {
     clearTimer();
+    switchSidesAnnouncedRef.current = false;
     if (currentIndex > 0) {
       const prevIndex = currentIndex - 1;
       setCurrentIndex(prevIndex);
@@ -142,6 +159,7 @@ export function usePlayer({ stretches, onFinish }: UsePlayerOptions) {
   const restart = useCallback(() => {
     clearTimer();
     setCurrentIndex(0);
+    switchSidesAnnouncedRef.current = false;
     if (sorted.length > 0) {
       setState('playing');
       const first = sorted[0];

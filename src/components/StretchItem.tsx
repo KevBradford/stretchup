@@ -30,7 +30,12 @@ export function StretchItem({
         <Text style={styles.name} numberOfLines={1}>
           {stretch.name}
         </Text>
-        <Text style={styles.duration}>{stretch.durationSeconds}s</Text>
+        <View style={styles.meta}>
+          <Text style={styles.duration}>{stretch.durationSeconds}s</Text>
+          {stretch.switchSides && (
+            <Text style={styles.switchBadge}>Switch Sides</Text>
+          )}
+        </View>
       </View>
       {stretch.mediaUrl && (
         <View style={styles.mediaBadge}>
@@ -80,10 +85,20 @@ const styles = StyleSheet.create({
     fontWeight: '500',
     color: '#333',
   },
+  meta: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    marginTop: 2,
+  },
   duration: {
     fontSize: 13,
     color: '#999',
-    marginTop: 2,
+  },
+  switchBadge: {
+    fontSize: 11,
+    color: '#4A90D9',
+    fontWeight: '600',
   },
   mediaBadge: {
     marginRight: 8,

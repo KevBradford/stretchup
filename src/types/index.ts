@@ -4,6 +4,7 @@ export interface Stretch {
   durationSeconds: number;
   mediaUrl: string | null;
   mediaType: 'image' | 'gif' | 'video' | null;
+  switchSides: boolean;
   order: number;
 }
 

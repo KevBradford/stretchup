@@ -1,9 +1,10 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import {
   View,
   Text,
   TextInput,
   TouchableOpacity,
+  Switch,
   StyleSheet,
   Modal,
 } from 'react-native';
@@ -32,6 +33,17 @@ export function StretchForm({
   );
   const [mediaUrl, setMediaUrl] = useState(stretch?.mediaUrl ?? null);
   const [mediaType, setMediaType] = useState(stretch?.mediaType ?? null);
+  const [switchSides, setSwitchSides] = useState(stretch?.switchSides ?? false);
+
+  useEffect(() => {
+    if (visible) {
+      setName(stretch?.name ?? '');
+      setDuration(stretch?.durationSeconds?.toString() ?? '30');
+      setMediaUrl(stretch?.mediaUrl ?? null);
+      setMediaType(stretch?.mediaType ?? null);
+      setSwitchSides(stretch?.switchSides ?? false);
+    }
+  }, [visible, stretch]);
 
   const handleSave = () => {
     if (!name.trim()) return;
@@ -43,6 +55,7 @@ export function StretchForm({
       durationSeconds: Math.max(1, durationNum),
       mediaUrl,
       mediaType,
+      switchSides,
       order: stretch?.order ?? 0,
     });
 
@@ -54,6 +67,7 @@ export function StretchForm({
     setDuration('30');
     setMediaUrl(null);
     setMediaType(null);
+    setSwitchSides(false);
   };
 
   const handleCancel = () => {
@@ -107,6 +121,16 @@ export function StretchForm({
               setMediaType(null);
             }}
           />
+
+          <View style={styles.switchRow}>
+            <Text style={styles.switchLabel}>Switch Sides</Text>
+            <Switch
+              value={switchSides}
+              onValueChange={setSwitchSides}
+              trackColor={{ false: '#ddd', true: '#4A90D9' }}
+              thumbColor="#fff"
+            />
+          </View>
 
           <View style={styles.actions}>
             <TouchableOpacity
@@ -164,6 +188,18 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: '#333',
     backgroundColor: '#f9f9f9',
+  },
+  switchRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginTop: 16,
+    paddingVertical: 4,
+  },
+  switchLabel: {
+    fontSize: 16,
+    fontWeight: '500',
+    color: '#333',
   },
   actions: {
     flexDirection: 'row',
