@@ -1,17 +1,50 @@
+import { View, Image, Text, StyleSheet } from 'react-native';
 import { Stack } from 'expo-router';
+
+function LogoTitle() {
+  return (
+    <View style={headerStyles.container}>
+      <Image
+        source={require('../../assets/icon.png')}
+        style={headerStyles.icon}
+      />
+      <Text style={headerStyles.title}>StretchUp</Text>
+    </View>
+  );
+}
+
+const headerStyles = StyleSheet.create({
+  container: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  icon: {
+    width: 32,
+    height: 32,
+    borderRadius: 6,
+    marginRight: 10,
+  },
+  title: {
+    color: '#fff',
+    fontSize: 20,
+    fontWeight: '700',
+  },
+});
 
 export default function MainLayout() {
   return (
     <Stack
       screenOptions={{
-        headerStyle: { backgroundColor: '#4A90D9' },
+        headerStyle: { backgroundColor: '#F5911E' },
         headerTintColor: '#fff',
         headerTitleStyle: { fontWeight: '600' },
       }}
     >
       <Stack.Screen
         name="index"
-        options={{ title: 'My Routines' }}
+        options={{
+          headerTitle: () => <LogoTitle />,
+        }}
       />
       <Stack.Screen
         name="routine/create"

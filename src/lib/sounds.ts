@@ -21,6 +21,10 @@ export async function playChime(): Promise<void> {
   }
 }
 
+export async function unlockAudio(): Promise<void> {
+  // No-op on native — only needed for mobile web browsers
+}
+
 export async function unloadSounds(): Promise<void> {
   if (chimeSound) {
     await chimeSound.unloadAsync();

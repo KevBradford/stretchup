@@ -69,7 +69,7 @@ export function usePlayer({ stretches, onFinish }: UsePlayerOptions) {
     }
   }, [secondsRemaining, state, currentIndex, totalStretches, sorted, announceStretch, startTimer, onFinish, currentStretch]);
 
-  const play = useCallback(() => {
+  const play = useCallback((skipAnnounce?: boolean) => {
     if (sorted.length === 0) return;
 
     if (state === 'paused') {
@@ -82,7 +82,9 @@ export function usePlayer({ stretches, onFinish }: UsePlayerOptions) {
     setCurrentIndex(0);
     setState('playing');
     const first = sorted[0];
-    announceStretch(first);
+    if (!skipAnnounce) {
+      announceStretch(first);
+    }
     startTimer(first.durationSeconds);
   }, [sorted, state, secondsRemaining, announceStretch, startTimer]);
 

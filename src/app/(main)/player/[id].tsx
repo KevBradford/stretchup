@@ -1,16 +1,20 @@
-import { useEffect } from 'react';
+import { useEffect, useCallback } from 'react';
 import {
   View,
   Text,
+  TouchableOpacity,
   StyleSheet,
   ActivityIndicator,
   StatusBar,
+  Platform,
 } from 'react-native';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { useKeepAwake } from 'expo-keep-awake';
 import { useAuth } from '../../../hooks/useAuth';
 import { useRoutine } from '../../../hooks/useRoutine';
 import { usePlayer } from '../../../hooks/usePlayer';
+import { unlockAudio } from '../../../lib/sounds';
+import { warmUpTTS } from '../../../lib/tts';
 import { CountdownTimer } from '../../../components/CountdownTimer';
 import { PlayerControls } from '../../../components/PlayerControls';
 import { MediaDisplay } from '../../../components/MediaDisplay';
@@ -38,11 +42,25 @@ export default function PlayerScreen() {
     onFinish: () => {},
   });
 
-  useEffect(() => {
-    if (routine && state === 'idle' && routine.stretches.length > 0) {
+  const handleStart = useCallback(() => {
+    if (Platform.OS === 'web') {
+      unlockAudio();
+      // Speak the first stretch name directly from user gesture
+      const sorted = [...(routine?.stretches ?? [])].sort((a, b) => a.order - b.order);
+      if (sorted.length > 0) {
+        const synth = window.speechSynthesis;
+        synth.cancel();
+        const utterance = new SpeechSynthesisUtterance(sorted[0].name);
+        utterance.lang = 'en-US';
+        utterance.rate = 0.9;
+        utterance.volume = 1;
+        synth.speak(utterance);
+      }
+      play(true); // skip announce since we just spoke it
+    } else {
       play();
     }
-  }, [routine]);
+  }, [play, routine]);
 
   const handleStop = () => {
     stop();
@@ -65,6 +83,24 @@ export default function PlayerScreen() {
       <View style={[styles.container, { backgroundColor: bgColor }]}>
         <StatusBar barStyle="light-content" />
         <Text style={styles.errorText}>Routine not found</Text>
+      </View>
+    );
+  }
+
+  if (state === 'idle' && routine) {
+    return (
+      <View style={[styles.container, { backgroundColor: bgColor }]}>
+        <StatusBar barStyle="light-content" />
+        <Text style={styles.finishedTitle}>{routine.name}</Text>
+        <Text style={styles.finishedSubtitle}>
+          {routine.stretches.length} stretch{routine.stretches.length !== 1 ? 'es' : ''}
+        </Text>
+        <TouchableOpacity style={styles.startButton} onPress={handleStart}>
+          <Text style={styles.startButtonText}>Start</Text>
+        </TouchableOpacity>
+        <TouchableOpacity style={styles.backLink} onPress={handleStop}>
+          <Text style={styles.backLinkText}>Go Back</Text>
+        </TouchableOpacity>
       </View>
     );
   }
@@ -205,5 +241,25 @@ const styles = StyleSheet.create({
   finishedActions: {
     width: '100%',
     paddingHorizontal: 24,
+  },
+  startButton: {
+    backgroundColor: 'rgba(255,255,255,0.25)',
+    paddingHorizontal: 48,
+    paddingVertical: 18,
+    borderRadius: 30,
+    marginTop: 24,
+  },
+  startButtonText: {
+    color: '#fff',
+    fontSize: 22,
+    fontWeight: '700',
+  },
+  backLink: {
+    marginTop: 20,
+    padding: 12,
+  },
+  backLinkText: {
+    color: 'rgba(255,255,255,0.6)',
+    fontSize: 16,
   },
 });
